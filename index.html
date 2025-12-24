@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quantum Jump - Mobile Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+        
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        header {
+            text-align: center;
+            padding: 10px;
+            background: rgba(10, 15, 30, 0.9);
+            width: 100%;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #0de, #fc00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 219, 222, 0.5);
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: #a0ff;
+        }
+        
+        .game-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background-color: #0d17;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .ui-panel {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background: rgba(10, 15, 30, 0.95);
+            padding: 10px;
+            border-top: 2px solid #4dffea;
+        }
+        
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #4dffea;
+            font-size: 1rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .control-btn {
+            background: linear-gradient(90deg, #2980b9, #2c3e50);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(90deg, #3498db, #34495e);
+        }
+        
+        .upgrade-btn {
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+        }
+        
+        .upgrade-btn:active {
+            background: linear-gradient(90deg, #9b59b6, #af7ac5);
+        }
+        
+        .touch-controls {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 5;
+        }
+        
+        .touch-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(77, 255, 234, 0.3);
+            border: 3px solid #4dffea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+            user-select: none;
+        }
+        
+        .touch-btn:active {
+            background: rgba(77, 255, 234, 0.6);
+        }
+        
+        
+        .game-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 20;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid #4dffea;
+        }
+        
+        .game-message h2 {
+            font-size: 2rem;
+            color: #f33;
+            margin-bottom: 10px;
+        }
+        
+        .game-message p {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(90deg, #ff6c, #fb2b);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .restart-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .instructions {
+            background: rgba(10, 15, 30, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            width: 100%;
+        }
+        
+        .instructions h3 {
+            color: #4dffea;
+            margin-bottom: 5px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        .instructions ul {
+            padding-left: 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .highlight {
+            color: #c00;
+            font-weight: bold;
+        }
+        
+        .ability {
+            color: #6cc;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Адаптация для горизонтальной ориентации */
+        @media (orientation: landscape) {
+            .game-container {
+                max-width: 100%;
+                flex-direction: row;
+            }
+            
+            header {
+                width: auto;
+                height: 100%;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .game-wrapper {
+                height: 100%;
+            }
+            
+            .ui-panel {
+                flex-direction: column;
+                width: auto;
+                height: 100%;
+                padding: 15px;
+            }
+            
+            .touch-controls {
+                bottom: 100px;
+            }
+            
+            .jump-btn {
+                bottom: 50px;
+                right: 30px;
+            }
+            
+            .instructions {
+                display: none;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .touch-controls {
+                bottom: 60px;
+            }
+            
+            .touch-btn, .jump-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+            
+            header {
+                padding: 5px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>QUANTUM JUMP</h1>
+            <h2>Byy Nascazxz</h2>
+            <h3>src by github nasscazz<h3></h3>
+            </h3>
+            
+            <p class="subtitle">Мобильная версия xdddd </p>
+        </header>
+        
+        <div class="game-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="touch-controls">
+                <div class="touch-btn" id="leftBtn">←</div>
+                <div class="touch-btn" id="rightBtn">→</div>
+            </div>
+            
+            <div class="jump-btn" id="jumpBtn">↑</div>
+            
+            <div id="startScreen" class="game-message">
+                <h2>QUANTUM JUMP</h2>
+                <p>Нажмите кнопку ниже для начала игры!</p>
+                <p>Используйте кнопки управления или наклон телефона</p>
+                <button class="restart-btn" id="startBtn">Начать игру</button>
+            </div>
+            
+            <div id="gameOverScreen" class="game-message hidden">
+                <h2>ИГРА ОКОНЧЕНА</h2>
+                <p>Ваш результат: <span id="finalScore">0</span> очков</p>
+                <p>Максимальная высота: <span id="finalHeight">0</span> м</p>
+                <button class="restart-btn" id="restartBtn">Играть снова</button>
+            </div>
+        </div>
+        
+        <div class="ui-panel">
+            <div class="stats">
+                <div class="stat-item">
+                    <span>Очки:</span>
+                    <span id="score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Высота:</span>
+                    <span id="height" class="stat-value">0 м</span>
+                </div>
+                <div class="stat-item">
+                    <span>Монеты:</span>
+                    <span id="coins" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Уровень:</span>
+                    <span id="level" class="stat-value">1</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn upgrade-btn" id="upgradeBtn">Улучшить</button>
+                <button class="control-btn" id="abilityBtn">Способность</button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>Управление: кнопки или наклон телефона</h3>
+            <ul>
+                <li>Собирайте монеты для улучшений</li>
+                <li>Избегайте падения вниз</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация игры
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Устанавливаем размеры canvas под размер экрана
+        function resizeCanvas() {
+            const gameWrapper = document.querySelector('.game-wrapper');
+            canvas.width = gameWrapper.clientWidth;
+            canvas.height = gameWrapper.clientHeight;
+        }
+        
+        // Инициализируем размер canvas
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Элементы интерфейса
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const scoreElement = document.getElementById('score');
+        const heightElement = document.getElementById('height');
+        const coinsElement = document.getElementById('coins');
+        const levelElement = document.getElementById('level');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalHeightElement = document.getElementById('finalHeight');
+        
+        // Кнопки управления
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const jumpBtn = document.getElementById('jumpBtn');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+        const abilityBtn = document.getElementById('abilityBtn');
+        
+        // Игровые переменные
+        let game = {
+            running: false,
+            score: 0,
+            height: 0,
+            coins: 0,
+            level: 1,
+            gravity: 0.4,           // Увеличил гравитацию
+            platformSpeed: 2.5,     // Уменьшил скорость платформ
+            platforms: [],
+            coinsList: [],
+            powerUps: [],
+            bosses: [],
+            particles: [],
+            player: {
+                x: 0,
+                y: 0,
+                width: 35,          // Увеличил размер игрока
+                height: 50,         // Увеличил размер игрока
+                velocityX: 0,
+                velocityY: 0,
+                jumpForce: 8,       // УМЕНЬШИЛ силу прыжка в 2 раза
+                maxJumpForce: 12,   // Уменьшил максимальную силу прыжка
+                color: '#4dffea',
+                onGround: false,
+                facingRight: true,
+                abilities: {
+                    doubleJump: 0,
+                    magnet: 0,
+                    shield: 0
+                },
+                abilityActive: {
+                    doubleJump: false,
+                    magnet: false,
+                    shield: false
+                },
+                abilityCooldown: {
+                    doubleJump: 0,
+                    magnet: 0,
+                    shield: 0
+                }
+            },
+            keys: {
+                left: false,
+                right: false
+            },
+            lastPlatformY: 0,
+            upgradeCost: 50,
+            useTiltControls: false
+        };
+        
+        // Проверка поддержки акселерометра
+        if (window.DeviceOrientationEvent) {
+            game.useTiltControls = true;
+            window.addEventListener('deviceorientation', handleTilt);
+        }
+        
+        // Обработчик наклона устройства
+        function handleTilt(event) {
+            if (!game.running || !game.useTiltControls) return;
+            
+            const tilt = event.gamma; // Наклон влево-вправо (-90 до 90)
+            
+            if (tilt < -10) {
+                game.keys.left = true;
+                game.keys.right = false;
+            } else if (tilt > 10) {
+                game.keys.left = false;
+                game.keys.right = true;
+            } else {
+                game.keys.left = false;
+                game.keys.right = false;
+            }
+        }
+        
+        // Класс платформы
+        class Platform {
+            constructor(x, y, width, height, type = 'normal') {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.type = type;
+                this.color = this.getColor();
+                this.moveDirection = Math.random() > 0.5 ? 1 : -1;
+                this.moveSpeed = type === 'moving' ? 1.5 : 0;  // Уменьшил скорость движения
+                this.springForce = type === 'spring' ? 12 : 0; // Уменьшил силу пружины
+                this.sticky = type === 'sticky';
+                this.breakable = type === 'breakable';
+                this.broken = false;
+            }
+            
+            getColor() {
+                switch(this.type) {
+                    case 'normal': return '#66ff66';
+                    case 'breakable': return '#ff9966';
+                    case 'moving': return '#6699ff';
+                    case 'spring': return '#ffff66';
+                    case 'sticky': return '#ff66ff';
+                    default: return '#66ff66';
+                }
+            }
+            
+            update() {
+                // Движение платформы вниз
+                this.y += game.platformSpeed;
+                
+                // Движение движущихся платформ
+                if (this.type === 'moving') {
+                    this.x += this.moveSpeed * this.moveDirection;
+                    if (this.x <= 0 || this.x + this.width >= canvas.width) {
+                        this.moveDirection *= -1;
+                    }
+                }
+            }
+            
+            draw() {
+                if (this.broken) return;
+                
+                // Увеличиваем видимость платформ
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                
+                // Более толстая обводка для лучшей видимости
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+                
+                if (this.type === 'spring') {
+                    ctx.fillStyle = '#ff9900';
+                    ctx.fillRect(this.x + 5, this.y - 5, this.width - 10, 5);
+                } else if (this.type === 'sticky') {
+                    ctx.fillStyle = 'rgba(255, 102, 255, 0.5)'; // Более заметный эффект
+                    for (let i = 0; i < 3; i++) {
+                        const circleX = this.x + (this.width / 4) * (i + 1);
+                        const circleY = this.y + this.height / 2;
+                        ctx.beginPath();
+                        ctx.arc(circleX, circleY, 6, 0, Math.PI * 2); // Увеличил круги
+                        ctx.fill();
+                    }
+                } else if (this.type === 'breakable') {
+                    ctx.strokeStyle = '#994400';
+                    ctx.lineWidth = 3; // Более толстые трещины
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 10, this.y + 5);
+                    ctx.lineTo(this.x + this.width - 10, this.y + this.height - 5);
+                    ctx.moveTo(this.x + this.width - 10, this.y + 5);
+                    ctx.lineTo(this.x + 10, this.y + this.height - 5);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Класс монеты
+        class Coin {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 10; // Увеличил монеты
+                this.color = '#ffcc00';
+                this.collected = false;
+                this.rotation = 0;
+            }
+            
+            update() {
+                this.y += game.platformSpeed;
+                this.rotation += 0.1;
+                
+                // Притягивание к игроку если магнит активен
+                if (game.player.abilityActive.magnet && !this.collected) {
+                    const dx = game.player.x + game.player.width/2 - this.x;
+                    const dy = game.player.y + game.player.height/2 - this.y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (distance < 150) {
+                        this.x += dx * 0.05;
+                        this.y += dy * 0.05;
+                    }
+                }
+            }
+            
+            draw() {
+                if (this.collected) return;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                // Более заметные монеты
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius, this.radius/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ff9900';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius-2, this.radius/2-1, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius-4, this.radius/2-2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Блеск на монете
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.beginPath();
+                ctx.ellipse(-this.radius/3, -this.radius/4, this.radius/4, this.radius/8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        // Класс бонуса
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.width = 25; // Увеличил бонусы
+                this.height = 25;
+                this.type = type;
+                this.color = this.getColor();
+                this.collected = false;
+                this.pulse = 0;
+            }
+            
+            getColor() {
+                switch(this.type) {
+                    case 'doubleJump': return '#ff66cc';
+                    case 'magnet': return '#66ccff';
+                    case 'shield': return '#66ff66';
+                    default: return '#ffffff';
+                }
+            }
+            
+            update() {
+                this.y += game.platformSpeed;
+                this.pulse += 0.1;
+            }
+            
+            draw() {
+                if (this.collected) return;
+                
+                // Пульсирующий эффект для бонусов
+                const pulseSize = Math.sin(this.pulse) * 4;
+                
+                ctx.fillStyle = this.color;
+                ctx.fillRect(
+                    this.x - this.width/2 - pulseSize/2, 
+                    this.y - this.height/2 - pulseSize/2, 
+                    this.width + pulseSize, 
+                    this.height + pulseSize
+                );
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(
+                    this.x - this.width/2 - pulseSize/2, 
+                    this.y - this.height/2 - pulseSize/2, 
+                    this.width + pulseSize, 
+                    this.height + pulseSize
+                );
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 19px Arial'; // Увеличил шрифт
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                let symbol = '?';
+                if (this.type === 'doubleJump') symbol = '↟';
+                else if (this.type === 'magnet') symbol = '↯';
+                else if (this.type === 'shield') symbol = '⛉';
+                
+                ctx.fillText(symbol, this.x, this.y);
+            }
+        }
+        
+        // Класс босса
+        class Boss {
+            constructor(y) {
+                this.x = canvas.width / 2;
+                this.y = y;
+                this.width = 90; // Увеличил босса
+                this.height = 70;
+                this.health = 10;
+                this.maxHealth = 10;
+                this.color = '#ff3333';
+                this.speed = 1.5; // Уменьшил скорость босса
+                this.direction = 1;
+                this.attackCooldown = 0;
+                this.projectiles = [];
+            }
+            
+            update() {
+                this.y += game.platformSpeed;
+                
+                // Движение босса
+                this.x += this.speed * this.direction;
+                if (this.x <= this.width/2 || this.x >= canvas.width - this.width/2) {
+                    this.direction *= -1;
+                }
+                
+                // Атака
+                this.attackCooldown--;
+                if (this.attackCooldown <= 0) {
+                    this.attack();
+                    this.attackCooldown = 80 + Math.random() * 80; // Реже атакует
+                }
+                
+                // Обновление снарядов
+                for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                    this.projectiles[i].y += 3; // Медленнее снаряды
+                    if (this.projectiles[i].y > canvas.height) {
+                        this.projectiles.splice(i, 1);
+                    }
+                }
+            }
+            
+            attack() {
+                this.projectiles.push({
+                    x: this.x,
+                    y: this.y + this.height/2,
+                    radius: 10, // Увеличил снаряды
+                    color: '#ff6666'
+                });
+            }
+            
+            draw() {
+                // Рисуем босса
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+                
+                // Глаза босса - больше
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(this.x - this.width/4 - 8, this.y - this.height/4, 16, 20);
+                ctx.fillRect(this.x + this.width/4 - 8, this.y - this.height/4, 16, 20);
+                
+                // Зрачки
+                ctx.fillStyle = '#000';
+                ctx.fillRect(this.x - this.width/4 - 4, this.y - this.height/4 + 4, 8, 12);
+                ctx.fillRect(this.x + this.width/4 - 4, this.y - this.height/4 + 4, 8, 12);
+                
+                // Рот
+                ctx.fillStyle = '#000';
+                ctx.fillRect(this.x - 25, this.y + this.height/4, 50, 12);
+                
+                // Полоска здоровья - более заметная
+                const healthWidth = 80;
+                const healthPercent = this.health / this.maxHealth;
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(this.x - healthWidth/2, this.y - this.height/2 - 20, healthWidth, 10);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(this.x - healthWidth/2, this.y - this.height/2 - 20, healthWidth * healthPercent, 10);
+                
+                // Обводка здоровья
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - healthWidth/2, this.y - this.height/2 - 20, healthWidth, 10);
+                
+                // Рисуем снаряды
+                for (const projectile of this.projectiles) {
+                    ctx.fillStyle = projectile.color;
+                    ctx.beginPath();
+                    ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Обводка снарядов
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Класс частиц
+        class Particle {
+            constructor(x, y, color, velocityX, velocityY, size, life = 30) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocityX = velocityX;
+                this.velocityY = velocityY;
+                this.size = size;
+                this.life = life;
+                this.maxLife = life;
+            }
+            
+            update() {
+                this.x += this.velocityX;
+                this.y += this.velocityY + game.platformSpeed;
+                this.life--;
+                this.velocityY += 0.1;
+            }
+            
+            draw() {
+                const alpha = this.life / this.maxLife;
+                ctx.fillStyle = this.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Инициализация игры
+        function initGame() {
+            game.running = true;
+            game.score = 0;
+            game.height = 0;
+            game.coins = 0;
+            game.level = 1;
+            game.platformSpeed = 2.5;
+            game.platforms = [];
+            game.coinsList = [];
+            game.powerUps = [];
+            game.bosses = [];
+            game.particles = [];
+            
+            // Сброс игрока - помещаем его ближе к центру
+            game.player.x = canvas.width / 2 - game.player.width/2;
+            game.player.y = canvas.height * 0.6; // Игрок в нижней части экрана
+            game.player.velocityX = 0;
+            game.player.velocityY = 0;
+            game.player.onGround = false;
+            game.player.facingRight = true;
+            
+            // Сброс способностей
+            game.player.abilities.doubleJump = 0;
+            game.player.abilities.magnet = 0;
+            game.player.abilities.shield = 0;
+            
+            game.player.abilityActive.doubleJump = false;
+            game.player.abilityActive.magnet = false;
+            game.player.abilityActive.shield = false;
+            
+            game.player.abilityCooldown.doubleJump = 0;
+            game.player.abilityCooldown.magnet = 0;
+            game.player.abilityCooldown.shield = 0;
+            
+            // Создание начальных платформ - ближе к игроку
+            game.lastPlatformY = canvas.height - 100;
+            for (let i = 0; i < 8; i++) {
+                createPlatform();
+            }
+            
+            // Обновление интерфейса
+            updateUI();
+            
+            // Скрытие экранов
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+        }
+        
+        // Создание платформы
+        function createPlatform() {
+            const x = Math.random() * (canvas.width - 100) + 50;
+            const y = game.lastPlatformY - Math.random() * 60 - 40; // Ближе друг к другу
+            const width = Math.random() * 70 + 70; // Шире платформы
+            
+            let type = 'normal';
+            const typeRand = Math.random();
+            
+            if (game.height > 150) { // Раньше появляются особые платформы
+                if (typeRand < 0.1) type = 'breakable';
+                else if (typeRand < 0.2) type = 'moving';
+                else if (typeRand < 0.25) type = 'spring';
+                else if (typeRand < 0.3) type = 'sticky';
+            }
+            
+            const platform = new Platform(x, y, width, 18, type); // Толще платформы
+            game.platforms.push(platform);
+            
+            // Чаще создаем монеты
+            if (Math.random() < 0.5) {
+                const coinX = x + width / 2;
+                const coinY = y - 25;
+                game.coinsList.push(new Coin(coinX, coinY));
+            }
+            
+            // Чаще создаем бонусы
+            if (Math.random() < 0.08) {
+                const powerUpX = x + width / 2;
+                const powerUpY = y - 50;
+                const types = ['doubleJump', 'magnet', 'shield'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                game.powerUps.push(new PowerUp(powerUpX, powerUpY, type));
+            }
+            
+            game.lastPlatformY = y;
+            
+            // Создание босса каждые 300 метров
+            if (game.height > 0 && Math.floor(game.height) % 300 === 0 && game.bosses.length === 0) {
+                const bossY = y - 150;
+                game.bosses.push(new Boss(bossY));
+            }
+        }
+        
+        // Обновление игры
+        function updateGame() {
+            if (!game.running) return;
+            
+            // Движение игрока - более плавное
+            if (game.keys.left) {
+                game.player.velocityX = -4;
+                game.player.facingRight = false;
+            } else if (game.keys.right) {
+                game.player.velocityX = 4;
+                game.player.facingRight = true;
+            } else {
+                game.player.velocityX *= 0.85; // Быстрее замедление
+            }
+            
+            // Гравитация - сильнее чтобы быстрее падать
+            game.player.velocityY += game.gravity;
+            game.player.x += game.player.velocityX;
+            game.player.y += game.player.velocityY;
+            
+            // Ограничение движения по горизонтали
+            if (game.player.x < 0) game.player.x = canvas.width;
+            if (game.player.x > canvas.width) game.player.x = 0;
+            
+            // Удерживаем игрока в пределах видимой области
+            const minY = canvas.height * 0.3; // Минимальная высота
+            const maxY = canvas.height * 0.9; // Максимальная высота
+            
+            if (game.player.y < minY) {
+                game.player.y = minY;
+                game.player.velocityY = 0;
+            }
+            
+            if (game.player.y > maxY) {
+                game.player.y = maxY;
+                // Не наказываем, просто ограничиваем
+            }
+            
+            // Обновление способностей
+            updateAbilities();
+            
+            // Удаление объектов за пределами экрана
+            game.platforms = game.platforms.filter(p => p.y < canvas.height + 100);
+            game.coinsList = game.coinsList.filter(c => c.y < canvas.height + 100);
+            game.powerUps = game.powerUps.filter(p => p.y < canvas.height + 100);
+            game.bosses = game.bosses.filter(b => b.y < canvas.height + 100);
+            
+            // Обновление платформ
+            for (const platform of game.platforms) {
+                platform.update();
+            }
+            
+            // Обновление монет
+            for (const coin of game.coinsList) {
+                coin.update();
+            }
+            
+            // Обновление бонусов
+            for (const powerUp of game.powerUps) {
+                powerUp.update();
+            }
+            
+            // Обновление боссов
+            for (const boss of game.bosses) {
+                boss.update();
+                
+                // Проверка столкновений со снарядами
+                for (let i = boss.projectiles.length - 1; i >= 0; i--) {
+                    const projectile = boss.projectiles[i];
+                    if (checkCollision(
+                        game.player.x, game.player.y, game.player.width, game.player.height,
+                        projectile.x - projectile.radius, projectile.y - projectile.radius, 
+                        projectile.radius * 2, projectile.radius * 2
+                    )) {
+                        if (!game.player.abilityActive.shield) {
+                            gameOver();
+                            return;
+                        } else {
+                            createParticleEffect(projectile.x, projectile.y, '#66ff66');
+                            boss.projectiles.splice(i, 1);
+                        }
+                    }
+                }
+                
+                // Проверка столкновения с боссом
+                if (checkCollision(
+                    game.player.x, game.player.y, game.player.width, game.player.height,
+                    boss.x - boss.width/2, boss.y - boss.height/2, boss.width, boss.height
+                )) {
+                    if (game.player.velocityY > 0 && game.player.y < boss.y - boss.height/4) {
+                        boss.health--;
+                        game.player.velocityY = -game.player.jumpForce;
+                        createParticleEffect(boss.x, boss.y, boss.color);
+                        game.score += 50;
+                        
+                        if (boss.health <= 0) {
+                            game.bosses = game.bosses.filter(b => b !== boss);
+                            game.score += 500;
+                            game.coins += 50;
+                            updateUI();
+                        }
+                    } else {
+                        if (!game.player.abilityActive.shield) {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // Проверка столкновений с платформами
+            game.player.onGround = false;
+            for (const platform of game.platforms) {
+                if (!platform.broken && 
+                    game.player.velocityY > 0 &&
+                    game.player.y + game.player.height > platform.y &&
+                    game.player.y + game.player.height < platform.y + platform.height + 10 &&
+                    game.player.x + game.player.width > platform.x &&
+                    game.player.x < platform.x + platform.width) {
+                    
+                    game.player.y = platform.y - game.player.height;
+                    game.player.velocityY = 0;
+                    game.player.onGround = true;
+                    
+                    if (platform.type === 'breakable') {
+                        platform.broken = true;
+                        createParticleEffect(platform.x + platform.width/2, platform.y + platform.height/2, platform.color);
+                    } else if (platform.type === 'spring') {
+                        game.player.velocityY = -platform.springForce;
+                        createParticleEffect(platform.x + platform.width/2, platform.y, '#ffff00');
+                    } else if (platform.type === 'sticky') {
+                        game.player.velocityX *= 0.5;
+                    } else {
+                        const jumpForce = game.player.jumpForce + game.player.abilities.doubleJump * 0.3; // Меньший бонус
+                        game.player.velocityY = -jumpForce;
+                    }
+                    
+                    createParticleEffect(game.player.x + game.player.width/2, platform.y, '#4dffea');
+                    
+                    // Увеличение высоты и очков при прыжке
+                    game.height += 1;
+                    game.score += 10;
+                    
+                    // Медленнее увеличиваем скорость
+                    game.platformSpeed = 2.5 + game.level * 0.08;
+                    
+                    // Увеличение уровня каждые 100 метров
+                    game.level = Math.floor(game.height / 100) + 1;
+                    
+                    updateUI();
+                    break;
+                }
+            }
+            
+            // Проверка столкновений с монетами
+            for (let i = game.coinsList.length - 1; i >= 0; i--) {
+                const coin = game.coinsList[i];
+                if (!coin.collected &&
+                    checkCollision(
+                        game.player.x, game.player.y, game.player.width, game.player.height,
+                        coin.x - coin.radius, coin.y - coin.radius, coin.radius * 2, coin.radius * 2
+                    )) {
+                    coin.collected = true;
+                    game.coins++;
+                    game.score += 10;
+                    createParticleEffect(coin.x, coin.y, coin.color);
+                    game.coinsList.splice(i, 1);
+                    updateUI();
+                }
+            }
+            
+            // Проверка столкновений с бонусами
+            for (let i = game.powerUps.length - 1; i >= 0; i--) {
+                const powerUp = game.powerUps[i];
+                if (!powerUp.collected &&
+                    checkCollision(
+                        game.player.x, game.player.y, game.player.width, game.player.height,
+                        powerUp.x - powerUp.width/2, powerUp.y - powerUp.height/2, powerUp.width, powerUp.height
+                    )) {
+                    powerUp.collected = true;
+                    activatePowerUp(powerUp.type);
+                    game.powerUps.splice(i, 1);
+                }
+            }
+            
+            // Создание новых платформ
+            while (game.platforms.length < 10) {
+                createPlatform();
+            }
+            
+            // Проверка смерти - только если упал совсем вниз
+            if (game.player.y > canvas.height + 50) {
+                gameOver();
+                return;
+            }
+            
+            // Обновление частиц
+            for (let i = game.particles.length - 1; i >= 0; i--) {
+                game.particles[i].update();
+                if (game.particles[i].life <= 0) {
+                    game.particles.splice(i, 1);
+                }
+            }
+        }
+        
+        // Обновление способностей
+        function updateAbilities() {
+            if (game.player.abilityActive.doubleJump && game.player.abilityCooldown.doubleJump > 0) {
+                game.player.abilityCooldown.doubleJump--;
+                if (game.player.abilityCooldown.doubleJump <= 0) {
+                    game.player.abilityActive.doubleJump = false;
+                }
+            }
+            
+            if (game.player.abilityActive.magnet && game.player.abilityCooldown.magnet > 0) {
+                game.player.abilityCooldown.magnet--;
+                if (game.player.abilityCooldown.magnet <= 0) {
+                    game.player.abilityActive.magnet = false;
+                }
+            }
+            
+            if (game.player.abilityActive.shield && game.player.abilityCooldown.shield > 0) {
+                game.player.abilityCooldown.shield--;
+                if (game.player.abilityCooldown.shield <= 0) {
+                    game.player.abilityActive.shield = false;
+                }
+            }
+            
+            // Обновление текста кнопки способности
+            let abilityText = "Способность";
+            if (game.player.abilityActive.doubleJump) {
+                abilityText = "Прыжок: " + Math.ceil(game.player.abilityCooldown.doubleJump / 60) + "с";
+            } else if (game.player.abilityActive.magnet) {
+                abilityText = "Магнит: " + Math.ceil(game.player.abilityCooldown.magnet / 60) + "с";
+            } else if (game.player.abilityActive.shield) {
+                abilityText = "Щит: " + Math.ceil(game.player.abilityCooldown.shield / 60) + "с";
+            }
+            abilityBtn.textContent = abilityText;
+        }
+        
+        // Активация бонуса
+        function activatePowerUp(type) {
+            switch(type) {
+                case 'doubleJump':
+                    game.player.abilityActive.doubleJump = true;
+                    game.player.abilityCooldown.doubleJump = 300;
+                    break;
+                case 'magnet':
+                    game.player.abilityActive.magnet = true;
+                    game.player.abilityCooldown.magnet = 450;
+                    break;
+                case 'shield':
+                    game.player.abilityActive.shield = true;
+                    game.player.abilityCooldown.shield = 600;
+                    break;
+            }
+            
+            createParticleEffect(game.player.x + game.player.width/2, game.player.y, game.player.color);
+        }
+        
+        // Создание эффекта частиц
+        function createParticleEffect(x, y, color) {
+            for (let i = 0; i < 15; i++) { // Больше частиц
+                const velocityX = (Math.random() - 0.5) * 4;
+                const velocityY = (Math.random() - 0.5) * 4;
+                const size = Math.random() * 5 + 2;
+                game.particles.push(new Particle(x, y, color, velocityX, velocityY, size));
+            }
+        }
+        
+        // Проверка столкновений
+        function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
+            return x1 < x2 + w2 &&
+                   x1 + w1 > x2 &&
+                   y1 < y2 + h2 &&
+                   y1 + h1 > y2;
+        }
+        
+        // Отрисовка игры
+        function drawGame() {
+            // Очистка холста
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Фон с градиентом
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a1a3a');
+            gradient.addColorStop(0.5, '#0a1128');
+            gradient.addColorStop(1, '#1c2541');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Звезды
+            drawStars();
+            
+            // Отрисовка платформ
+            for (const platform of game.platforms) {
+                platform.draw();
+            }
+            
+            // Отрисовка монет
+            for (const coin of game.coinsList) {
+                coin.draw();
+            }
+            
+            // Отрисовка бонусов
+            for (const powerUp of game.powerUps) {
+                powerUp.draw();
+            }
+            
+            // Отрисовка боссов
+            for (const boss of game.bosses) {
+                boss.draw();
+            }
+            
+            // Отрисовка игрока
+            drawPlayer();
+            
+            // Отрисовка частиц
+            for (const particle of game.particles) {
+                particle.draw();
+            }
+            
+            // Отрисовка щита, если активен
+            if (game.player.abilityActive.shield) {
+                ctx.strokeStyle = '#66ff66';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(
+                    game.player.x + game.player.width/2,
+                    game.player.y + game.player.height/2,
+                    Math.max(game.player.width, game.player.height)/2 + 8,
+                    0, Math.PI * 2
+                );
+                ctx.stroke();
+            }
+            
+            // Отрисовка магнита, если активен
+            if (game.player.abilityActive.magnet) {
+                ctx.strokeStyle = '#66ccff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(
+                    game.player.x + game.player.width/2,
+                    game.player.y + game.player.height/2,
+                    150, 0, Math.PI * 2
+                );
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // Отрисовка игрока
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(game.player.x + game.player.width/2, game.player.y + game.player.height/2);
+            
+            if (!game.player.facingRight) {
+                ctx.scale(-1, 1);
+            }
+            
+            // Тело игрока - с обводкой
+            ctx.fillStyle = game.player.color;
+            ctx.fillRect(-game.player.width/2, -game.player.height/2, game.player.width, game.player.height);
+            
+            // Обводка игрока для лучшей видимости
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-game.player.width/2, -game.player.height/2, game.player.width, game.player.height);
+            
+            // Глаза - больше
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-game.player.width/4, -game.player.height/4, 8, 12);
+            ctx.fillRect(game.player.width/4 - 8, -game.player.height/4, 8, 12);
+            
+            // Зрачки
+            ctx.fillStyle = '#000';
+            const eyeOffset = game.player.onGround ? 0 : Math.sin(Date.now() / 100) * 2;
+            ctx.fillRect(-game.player.width/4 + 2, -game.player.height/4 + 3 + eyeOffset, 4, 6);
+            ctx.fillRect(game.player.width/4 - 6, -game.player.height/4 + 3 + eyeOffset, 4, 6);
+            
+            // Улыбка - больше
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, -game.player.height/8, 10, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+            
+            // Эффект движения
+            if (Math.abs(game.player.velocityX) > 1) {
+                ctx.fillStyle = 'rgba(77, 255, 234, 0.5)';
+                const tailWidth = Math.abs(game.player.velocityX) * 2;
+                ctx.fillRect(-game.player.width/2 - tailWidth, -game.player.height/4, tailWidth, game.player.height/2);
+            }
+            
+            ctx.restore();
+        }
+        
+        // Отрисовка звезд
+        function drawStars() {
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 40; i++) { // Больше звезд
+                const x = (i * 13) % canvas.width;
+                const y = (i * 9) % canvas.height;
+                const size = Math.sin(i + Date.now() / 1500) * 0.8 + 1.2; // Медленное мерцание
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            scoreElement.textContent = Math.floor(game.score);
+            heightElement.textContent = Math.floor(game.height) + ' м';
+            coinsElement.textContent = game.coins;
+            levelElement.textContent = game.level;
+            
+            // Обновление стоимости улучшения
+            upgradeBtn.textContent = `Улучшить (${game.upgradeCost})`;
+            upgradeBtn.disabled = game.coins < game.upgradeCost;
+        }
+        
+        // Конец игры
+        function gameOver() {
+            game.running = false;
+            finalScoreElement.textContent = Math.floor(game.score);
+            finalHeightElement.textContent = Math.floor(game.height) + ' м';
+            gameOverScreen.classList.remove('hidden');
+        }
+        
+        // Основной игровой цикл
+        function gameLoop() {
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Обработчики событий
+        startBtn.addEventListener('click', initGame);
+        restartBtn.addEventListener('click', initGame);
+        
+        // Управление кнопками
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            game.keys.left = true;
+        });
+        
+        leftBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            game.keys.left = false;
+        });
+        
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            game.keys.right = true;
+        });
+        
+        rightBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            game.keys.right = false;
+        });
+        
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            
+            // Прыжок в воздухе при наличии улучшения
+            if (!game.player.onGround && game.player.abilities.doubleJump > 0 && !game.player.abilityActive.doubleJump) {
+                game.player.velocityY = -game.player.jumpForce * 1.3; // Меньший двойной прыжок
+                game.player.abilityActive.doubleJump = true;
+                game.player.abilityCooldown.doubleJump = 60;
+                createParticleEffect(game.player.x + game.player.width/2, game.player.y, '#ff66cc');
+            }
+        });
+        
+        // Улучшение способности
+        upgradeBtn.addEventListener('click', () => {
+            if (game.coins >= game.upgradeCost) {
+                game.coins -= game.upgradeCost;
+                
+                // Улучшаем следующую доступную способность
+                if (game.player.abilities.doubleJump < 3) {
+                    game.player.abilities.doubleJump++;
+                    game.player.jumpForce += 0.3; // Меньшее увеличение силы прыжка
+                    createParticleEffect(game.player.x + game.player.width/2, game.player.y, '#ff66cc');
+                } else if (game.player.abilities.magnet < 3) {
+                    game.player.abilities.magnet++;
+                    createParticleEffect(game.player.x + game.player.width/2, game.player.y, '#66ccff');
+                } else if (game.player.abilities.shield < 3) {
+                    game.player.abilities.shield++;
+                    createParticleEffect(game.player.x + game.player.width/2, game.player.y, '#66ff66');
+                }
+                
+                game.upgradeCost = Math.floor(game.upgradeCost * 1.5);
+                updateUI();
+            }
+        });
+        
+        // Активация способности вручную
+        abilityBtn.addEventListener('click', () => {
+            if (game.player.abilities.magnet > 0 && !game.player.abilityActive.magnet) {
+                game.player.abilityActive.magnet = true;
+                game.player.abilityCooldown.magnet = 450;
+            } else if (game.player.abilities.shield > 0 && !game.player.abilityActive.shield) {
+                game.player.abilityActive.shield = true;
+                game.player.abilityCooldown.shield = 600;
+            }
+        });
+        
+        // Управление с клавиатуры для тестирования
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+                game.keys.left = true;
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                game.keys.right = true;
+            } else if (e.key === ' ' && game.running) {
+                if (!game.player.onGround && game.player.abilities.doubleJump > 0 && !game.player.abilityActive.doubleJump) {
+                    game.player.velocityY = -game.player.jumpForce * 1.3;
+                    game.player.abilityActive.doubleJump = true;
+                    game.player.abilityCooldown.doubleJump = 60;
+                    createParticleEffect(game.player.x + game.player.width/2, game.player.y, '#ff66cc');
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+                game.keys.left = false;
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                game.keys.right = false;
+            }
+        });
+        
+        // Запуск игрового цикла
+        gameLoop();
+        
+        // Рисуем начальный экран
+        drawGame();
+    </script>
+</body>
+  </html>
